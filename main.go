@@ -9,7 +9,7 @@ import (
 
 var ch1 chan[]byte
 
-func handler(ws *websocket.Conn)  {
+func handler(ws *websocket.Conn) {
 	for {
 		go func() {
 			buffer := make([]byte, 4096)

@@ -57,7 +57,7 @@ func handler(ws *websocket.Conn) {
 func main() {
 	ch1 = make(chan[]byte)
 
-	http.Handle("/", http.FileServer(http.Dir(".")))
+	http.Handle("/", http.FileServer(http.Dir("public/dist/")))
 	http.Handle("/ws", websocket.Handler(handler))
 	if err := http.ListenAndServe(":9999", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)

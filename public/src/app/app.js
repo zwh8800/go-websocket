@@ -1,14 +1,16 @@
+import 'babel-polyfill';
 import $ from 'jquery';
-$(function () {
-	var ws = new WebSocket("ws://localhost:9999/ws");
-	ws.onmessage = function (e) {
-		$('#output').append(e.data + '\r\n');
-	};
+import WS from './WS';
+
+$(async function () {
+	var ws = new WS('ws://localhost:9999/ws');
 	$('#send').click(function () {
-		ws.send($('#input').val());
+		ws.write($('#input').val());
 		$('#input').val('');
 	});
 
-
-
+	while (true) {
+		let data = await ws.readAsync();
+		$('#output').append(data);
+	}
 });

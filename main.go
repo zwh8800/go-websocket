@@ -10,38 +10,48 @@ import (
 var ch1 chan[]byte
 
 func handler(ws *websocket.Conn) {
-	for {
-		go func() {
-			buffer := make([]byte, 4096)
-			_, err := ws.Read(buffer)
+	closeCh := make(chan int)
+
+	go func() {
+		buffer := make([]byte, 4096)
+		for {
+			n, err := ws.Read(buffer)
 			if err != nil {
 				if (err.Error() == "EOF") {
 					fmt.Printf("client [%s] closed\n", ws.LocalAddr())
-					ws.Close()
+					close(closeCh)	//close connection
 					return
 				} else {
 					log.Fatal("Read: ", err)
 				}
 			}
-			ch1 <- buffer
-		}()
-
-		buffer := make([]byte, 4096)
-
-		buffer = <-ch1
-		n := len(buffer)
-		msg := string(buffer[:n])
-
-		fmt.Printf("%d byte received: %s\n", n, msg)
-
-		sendMsg := "[" + msg + "]"
-		m, err := ws.Write([]byte(sendMsg))
-		if err != nil {
-			// TODO 判断连接是否关闭
-			log.Fatal("Write: ", err)
+			ch1 <- buffer[:n]
 		}
-		fmt.Printf("%d byte sent: %s\n", m, string(([]byte(sendMsg))[:m]))
-	}
+	}()
+
+	go func() {
+		for {
+			select {
+			case buffer := <- ch1:
+				n := len(buffer)
+				msg := string(buffer)
+				fmt.Printf("%d byte received: %s\n", n, msg)
+
+				sendMsg := "[" + msg + "]"
+				m, err := ws.Write([]byte(sendMsg))
+				if err != nil {
+					// TODO 判断连接是否关闭
+					log.Fatal("Write: ", err)
+				}
+				fmt.Printf("%d byte sent: %s\n", m, string(([]byte(sendMsg))[:m]))
+			case <- closeCh:
+				return
+			}
+		}
+	}()
+
+	<- closeCh
+	ws.Close()
 }
 
 func main() {

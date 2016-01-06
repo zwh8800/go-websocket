@@ -7,15 +7,20 @@ import (
 	"fmt"
 )
 
-var ch1 chan[]byte
+type Payload struct {
+	Type string `json:"type"`
+	Msg string	`json:"msg"`
+}
+
+var ch1 chan Payload
 
 func handler(ws *websocket.Conn) {
 	closeCh := make(chan int)
 
 	go func() {
-		buffer := make([]byte, 4096)
+		var receive Payload
 		for {
-			n, err := ws.Read(buffer)
+			err := websocket.JSON.Receive(ws, &receive)
 			if err != nil {
 				if (err.Error() == "EOF") {
 					fmt.Printf("client [%s] closed\n", ws.LocalAddr())
@@ -25,25 +30,25 @@ func handler(ws *websocket.Conn) {
 					log.Fatal("Read: ", err)
 				}
 			}
-			ch1 <- buffer[:n]
+			ch1 <- receive
 		}
 	}()
 
 	go func() {
 		for {
 			select {
-			case buffer := <- ch1:
-				n := len(buffer)
-				msg := string(buffer)
-				fmt.Printf("%d byte received: %s\n", n, msg)
+			case receive := <- ch1:
+				fmt.Printf("received: %s\n", receive)
 
-				sendMsg := "[" + msg + "]"
-				m, err := ws.Write([]byte(sendMsg))
+				sendMsg := Payload{
+					"message",
+					"[" + receive.Msg + "]",
+				}
+				err := websocket.JSON.Send(ws, sendMsg)
 				if err != nil {
-					// TODO 判断连接是否关闭
 					log.Fatal("Write: ", err)
 				}
-				fmt.Printf("%d byte sent: %s\n", m, string(([]byte(sendMsg))[:m]))
+				fmt.Printf("sent: %s\n", sendMsg)
 			case <- closeCh:
 				return
 			}
@@ -55,7 +60,7 @@ func handler(ws *websocket.Conn) {
 }
 
 func main() {
-	ch1 = make(chan[]byte)
+	ch1 = make(chan Payload)
 
 	http.Handle("/", http.FileServer(http.Dir("public/dist/")))
 	http.Handle("/ws", websocket.Handler(handler))

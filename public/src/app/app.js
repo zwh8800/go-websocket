@@ -4,13 +4,18 @@ import WS from './WS';
 
 $(async function () {
 	var ws = new WS('ws://localhost:9999/ws');
+	var input = $('#input');
+	var output = $('#output');
 	$('#send').click(function () {
-		ws.write($('#input').val());
-		$('#input').val('');
+		ws.write({
+			type: 'message',
+			msg: input.val()
+		});
+		input.val('');
 	});
 
 	while (true) {
 		let data = await ws.readAsync();
-		$('#output').append(data);
+		output.append(data.msg);
 	}
 });

@@ -23,7 +23,7 @@ func handler(ws *websocket.Conn) {
 			err := websocket.JSON.Receive(ws, &receive)
 			if err != nil {
 				if (err.Error() == "EOF") {
-					fmt.Printf("client [%s] closed\n", ws.LocalAddr())
+					fmt.Printf("client [%#v] closed\n", ws.LocalAddr())
 					close(closeCh)	//close connection
 					return
 				} else {
@@ -38,7 +38,7 @@ func handler(ws *websocket.Conn) {
 		for {
 			select {
 			case receive := <- ch1:
-				fmt.Printf("received: %s\n", receive)
+				fmt.Printf("received: %#v\n", receive)
 
 				sendMsg := Payload{
 					"message",
@@ -48,7 +48,7 @@ func handler(ws *websocket.Conn) {
 				if err != nil {
 					log.Fatal("Write: ", err)
 				}
-				fmt.Printf("sent: %s\n", sendMsg)
+				fmt.Printf("sent: %#v\n", sendMsg)
 			case <- closeCh:
 				return
 			}

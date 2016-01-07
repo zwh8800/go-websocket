@@ -4,7 +4,7 @@ class WS {
 		this._url = url;
 		this._isOpen = false;
 	}
-	open() {
+	openAsync() {
 		return new Promise((resolve, reject) => {
 			this._ws = new WebSocket(this._url);
 			this._ws.onopen = (e) => {

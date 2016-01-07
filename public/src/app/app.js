@@ -9,7 +9,7 @@ $(async function () {
 
 	var ws = new WS('ws://localhost:9999/ws');
 	try {
-		await ws.open();
+		await ws.openAsync();
 	} catch (e) {
 		return;
 	}

@@ -3,10 +3,13 @@ import $ from 'jquery';
 import WS from './WS';
 
 $(async function () {
-	var ws = new WS('ws://localhost:9999/ws');
 	var input = $('#input');
 	var output = $('#output');
-	$('#send').click(function () {
+	var button = $('#send');
+
+	var ws = new WS('ws://localhost:9999/ws');
+	await ws.open();
+	button.click(function () {
 		ws.write({
 			type: 'message',
 			msg: input.val()

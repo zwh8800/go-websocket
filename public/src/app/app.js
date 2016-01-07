@@ -8,7 +8,12 @@ $(async function () {
 	var button = $('#send');
 
 	var ws = new WS('ws://localhost:9999/ws');
-	await ws.open();
+	try {
+		await ws.open();
+	} catch (e) {
+		return;
+	}
+
 	button.click(function () {
 		ws.write({
 			type: 'message',
@@ -18,7 +23,11 @@ $(async function () {
 	});
 
 	while (true) {
-		let data = await ws.readAsync();
-		output.append(data.msg);
+		try {
+			let data = await ws.readAsync();
+			output.append(data.msg);
+		} catch (e) {
+			return;
+		}
 	}
 });

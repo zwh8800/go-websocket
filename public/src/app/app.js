@@ -5,7 +5,7 @@ import WS from './WS';
 $(async function () {
 	var input = $('#input');
 	var output = $('#output');
-	var button = $('#send');
+	var form = $('#sendForm');
 
 	var ws = new WS('ws://localhost:9999/ws');
 	try {
@@ -14,7 +14,8 @@ $(async function () {
 		return;
 	}
 
-	button.click(function () {
+	form.submit(function (e) {
+		e.preventDefault();
 		ws.write({
 			type: 'message',
 			msg: input.val()

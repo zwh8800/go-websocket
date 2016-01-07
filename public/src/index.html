@@ -3,13 +3,23 @@
 <head>
 	<meta charset="UTF-8">
 	<title>WebSocket</title>
+	<link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 <h1>WebSocket Test</h1>
 
-<textarea id="output"></textarea>
-<input id="input" placeholder="输入内容..." >
-<button id="send">发送</button>
+<div class="channels">
+
+</div>
+<div class="chat">
+	<div id="output">
+
+	</div>
+	<form id="sendForm">
+		<input id="input" placeholder="输入内容..." >
+		<button id="send">发送</button>
+	</form>
+</div>
 
 <script src="js/bundle.js"></script>
 </body>

@@ -5,6 +5,9 @@ import (
 	"golang.org/x/net/websocket"
 	"log"
 	"fmt"
+	"time"
+	"math/rand"
+	"strconv"
 )
 
 type Payload struct {
@@ -59,11 +62,65 @@ func handler(ws *websocket.Conn) {
 	ws.Close()
 }
 
+
+
+type Message struct {
+	Type string `json:"type"`
+	Token int `json:"token"`
+	Data string `json:"data"`
+}
+func handler2(ws *websocket.Conn) {
+	for {
+		var receive Message
+		err := websocket.JSON.Receive(ws, &receive)
+		if err != nil {
+			if (err.Error() == "EOF") {
+				fmt.Printf("client [%#v] closed\n", ws.LocalAddr())
+				return
+			} else {
+				log.Fatal("Read: ", err)
+			}
+		}
+		fmt.Printf("received: %#v\n", receive)
+
+		go func() {
+			switch receive.Type {
+			case "GetChannels":
+				timeout := 100 + rand.Intn(200);
+				time.Sleep(time.Duration(timeout) * time.Millisecond)
+				sendMsg := Message{
+					"GetChannelsResponse",
+					receive.Token,
+					strconv.Itoa(timeout),
+				}
+				err := websocket.JSON.Send(ws, sendMsg)
+				if err != nil {
+					log.Fatal("Write: ", err)
+				}
+
+			case "ListChannels":
+				timeout := 300 + rand.Intn(200);
+				time.Sleep(time.Duration(timeout) * time.Millisecond)
+				sendMsg := Message{
+					"ListChannelsResponse",
+					receive.Token,
+					strconv.Itoa(timeout),
+				}
+				err := websocket.JSON.Send(ws, sendMsg)
+				if err != nil {
+					log.Fatal("Write: ", err)
+				}
+			}
+		}()
+	}
+
+}
+
 func main() {
 	ch1 = make(chan Payload)
 
 	http.Handle("/", http.FileServer(http.Dir("public/dist/")))
-	http.Handle("/ws", websocket.Handler(handler))
+	http.Handle("/ws", websocket.Handler(handler2))
 	if err := http.ListenAndServe(":9999", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

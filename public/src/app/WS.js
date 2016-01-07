@@ -6,16 +6,19 @@ class WS {
 	}
 	openAsync() {
 		return new Promise((resolve, reject) => {
+			if (this._isOpen) {
+				resolve();
+			}
 			this._ws = new WebSocket(this._url);
 			this._ws.onopen = (e) => {
-				console.log('ws open success');
 				this._isOpen = true;
+				console.log('ws open success');
 				resolve(e);
 			};
 			this._ws.onerror = (e) => {
 				console.log('ws open fail');
 				this._ws = null;
-				this._isOpen = true;
+				this._isOpen = false;
 				reject(e);
 			};
 		});
@@ -37,7 +40,7 @@ class WS {
 			this._ws.onerror = (e) => {
 				console.log('ws read fail');
 				this._ws = null;
-				this._isOpen = true;
+				this._isOpen = false;
 				reject(e);
 			};
 		});

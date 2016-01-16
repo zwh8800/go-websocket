@@ -36,6 +36,8 @@ import WS from './WS';
 import ChatClient from './chat';
 
 var output = $('#output');
+var input = $('#input');
+var sendForm = $('#sendForm');
 
 async function showMyChannels() {
 	output.append('<p>' + new Date() + '</p>' +
@@ -60,12 +62,21 @@ async function showAllChannels() {
 		'<p>' + JSON.stringify(allChannels) + '</p>');
 }
 
-(async function () {
+async function init() {
 	await ChatClient.open();
 	ChatClient.start();
 	console.log('start');
 
-	showAllChannels();
-	showMyChannels();
-	showAllChannels();
-})();
+	//showAllChannels();
+	//showMyChannels();
+	//showAllChannels();
+}
+
+init();
+
+sendForm.submit(async function (e) {
+	e.preventDefault();
+	let channel = input.val();
+	let joinData = await ChatClient.join(channel);
+	output.append('<p>' + JSON.stringify(joinData) + '</p>');
+});

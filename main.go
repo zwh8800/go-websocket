@@ -67,7 +67,7 @@ func handler(ws *websocket.Conn) {
 type Message struct {
 	Type string `json:"type"`
 	Token int `json:"token"`
-	Data string `json:"data"`
+	Data interface{} `json:"data"`
 }
 func handler2(ws *websocket.Conn) {
 	for {
@@ -91,7 +91,7 @@ func handler2(ws *websocket.Conn) {
 				sendMsg := Message{
 					"GetChannelsResponse",
 					receive.Token,
-					strconv.Itoa(timeout),
+					timeout,
 				}
 				err := websocket.JSON.Send(ws, sendMsg)
 				if err != nil {
@@ -105,6 +105,22 @@ func handler2(ws *websocket.Conn) {
 					"ListChannelsResponse",
 					receive.Token,
 					strconv.Itoa(timeout),
+				}
+				err := websocket.JSON.Send(ws, sendMsg)
+				if err != nil {
+					log.Fatal("Write: ", err)
+				}
+
+			case "Join":
+				timeout := 300 + rand.Intn(200);
+				time.Sleep(time.Duration(timeout) * time.Millisecond)
+				sendMsg := Message{
+					"JoinResponse",
+					receive.Token,
+					map[string] interface{}{
+						"time": timeout,
+						"channel": receive.Data,
+					},
 				}
 				err := websocket.JSON.Send(ws, sendMsg)
 				if err != nil {

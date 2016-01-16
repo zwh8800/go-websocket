@@ -66,7 +66,18 @@ class Client {
 		});
 	}
 	join(channel) {
-
+		const token = this.token++;
+		const message = {
+			type: 'Join',
+			token: token,
+			data: channel
+		};
+		this.ws.write(message);
+		return new Promise((resolve, reject) => {
+			this.promiseHandlers['JoinResponse'][token] = {
+				resolve, reject
+			};
+		});
 	}
 	quit(channel) {
 

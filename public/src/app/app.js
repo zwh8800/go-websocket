@@ -37,6 +37,7 @@ import ChatClient from './chat';
 
 var output = $('#output');
 var input = $('#input');
+var send = $('#send');
 var sendForm = $('#sendForm');
 
 async function showMyChannels() {
@@ -77,6 +78,9 @@ init();
 sendForm.submit(async function (e) {
 	e.preventDefault();
 	let channel = input.val();
+	input.val('');
+	send.attr('disabled', true);
 	let joinData = await ChatClient.join(channel);
+	send.attr('disabled', false);
 	output.append('<p>' + JSON.stringify(joinData) + '</p>');
 });

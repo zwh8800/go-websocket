@@ -83,4 +83,7 @@ sendForm.submit(async function (e) {
 	let joinData = await ChatClient.join(channel);
 	send.attr('disabled', false);
 	output.append('<p>' + JSON.stringify(joinData) + '</p>');
+	output.animate({
+		scrollTop: output.height()
+	}, 300);
 });

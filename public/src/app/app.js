@@ -84,6 +84,6 @@ sendForm.submit(async function (e) {
 	send.attr('disabled', false);
 	output.append('<p>' + JSON.stringify(joinData) + '</p>');
 	output.animate({
-		scrollTop: output.height()
+		scrollTop: output[0].scrollHeight
 	}, 300);
 });

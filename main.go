@@ -8,6 +8,7 @@ import (
 	"time"
 	"math/rand"
 	"strconv"
+	"io"
 )
 
 type Payload struct {
@@ -74,7 +75,7 @@ func handler2(ws *websocket.Conn) {
 		var receive Message
 		err := websocket.JSON.Receive(ws, &receive)
 		if err != nil {
-			if (err.Error() == "EOF") {
+			if (err == io.EOF) {
 				fmt.Printf("client [%#v] closed\n", ws.LocalAddr())
 				return
 			} else {

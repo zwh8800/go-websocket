@@ -53,7 +53,8 @@ func (bus *EventBus) Remove(register *Register) {
 	defer bus.registersLock.Unlock()
 	for i := 0; i < len(bus.registers); i++ {
 		if bus.registers[i] == register {
-			bus.registers = append(bus.registers[:i], bus.registers[i+1:]...)
+			bus.registers[i] = bus.registers[len(bus.registers)-1]
+			bus.registers = bus.registers[:len(bus.registers)-1]
 			return
 		}
 	}

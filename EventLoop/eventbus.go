@@ -10,8 +10,8 @@ import (
 
 type EventBus struct {
 	publisher Publisher
-	registers []*Register
 
+	registers     []*Register
 	registersLock sync.RWMutex
 }
 
@@ -42,38 +42,27 @@ func (bus *EventBus) Add(ws *websocket.Conn) *Register {
 
 	bus.registersLock.Lock()
 	defer bus.registersLock.Unlock()
-	register := newRegister(ws)
+	register := newRegister(bus, ws)
 	bus.registers = append(bus.registers, register)
 
 	return register
 }
 
-func (bus *EventBus) find(register *Register) int {
-	bus.registersLock.RLock()
-	defer bus.registersLock.RUnlock()
-	for i := 0; i < len(bus.registers); i++ {
-		if bus.registers[i] == register {
-			return i
-		}
-	}
-	return -1
-}
-
-func (bus *EventBus) remove(i int) {
+func (bus *EventBus) Remove(register *Register) {
 	bus.registersLock.Lock()
 	defer bus.registersLock.Unlock()
-	bus.registers = append(bus.registers[:i], bus.registers[i+1:]...)
-}
-
-func (bus *EventBus) Remove(register *Register) {
-	i := bus.find(register)
-	if i != -1 {
-		bus.remove(i)
+	for i := 0; i < len(bus.registers); i++ {
+		if bus.registers[i] == register {
+			bus.registers = append(bus.registers[:i], bus.registers[i+1:]...)
+			return
+		}
 	}
 }
 
 func (bus *EventBus) Publish(event string, args ...interface{}) {
+	bus.registersLock.RLock()
+	defer bus.registersLock.RUnlock()
 	for _, r := range bus.registers {
-		r.publish(event, args)
+		r.emit(event, args)
 	}
 }

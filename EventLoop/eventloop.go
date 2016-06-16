@@ -9,22 +9,22 @@ import (
 )
 
 type EventBus struct {
-	publisher  Publisher
-	websockets []*websocket.Conn
+	publisher Publisher
+	registers []*Register
 
-	addLock sync.Mutex
+	registersLock sync.RWMutex
 }
 
 type Publisher func(bus *EventBus, ws *websocket.Conn)
 
 func NewEventLoop(publisher Publisher) *EventBus {
 	return &EventBus{
-		publisher:  publisher,
-		websockets: make([]*websocket.Conn, 0),
+		publisher: publisher,
+		registers: make([]*Register, 0),
 	}
 }
 
-func (bus *EventBus) Add(ws *websocket.Conn) (*Register, error) {
+func (bus *EventBus) Add(ws *websocket.Conn) *Register {
 	go func(bus *EventBus) {
 		defer func(bus *EventBus) {
 			if err := recover(); err != nil {
@@ -39,14 +39,41 @@ func (bus *EventBus) Add(ws *websocket.Conn) (*Register, error) {
 		}
 
 	}(bus)
-	bus.addLock.Lock()
-	defer bus.addLock.Unlock()
 
-	bus.websockets = append(bus.websockets, ws)
+	bus.registersLock.Lock()
+	defer bus.registersLock.Unlock()
+	register := newRegister(ws)
+	bus.registers = append(bus.registers, register)
 
-	return *Register{}, nil
+	return register
+}
+
+func (bus *EventBus) find(register *Register) int {
+	bus.registersLock.RLock()
+	defer bus.registersLock.RUnlock()
+	for i := 0; i < len(bus.registers); i++ {
+		if bus.registers[i] == register {
+			return i
+		}
+	}
+	return -1
+}
+
+func (bus *EventBus) remove(i int) {
+	bus.registersLock.Lock()
+	defer bus.registersLock.Unlock()
+	bus.registers = append(bus.registers[:i], bus.registers[i+1:]...)
+}
+
+func (bus *EventBus) Remove(register *Register) {
+	i := bus.find(register)
+	if i != -1 {
+		bus.remove(i)
+	}
 }
 
 func (bus *EventBus) Publish(event string, args ...interface{}) {
-
+	for _, r := range bus.registers {
+		r.publish(event, args)
+	}
 }
